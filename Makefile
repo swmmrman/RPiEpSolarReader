@@ -1,11 +1,11 @@
 LDFLAGS = -lcsv `mysql_config --cflags` `mysql_config --libs`
-modbusFlags = -lmodbus `pkg-config modbus --cflags`
+modbusFlags = -lmodbus `pkg-config libmodbus --cflags`
 
 
 
 all : reader
 
 reader: 
-	g++ reader.cxx -o bin/reader ${modbusFlags} --Wall
+	g++ reader.cxx -o bin/reader ${modbusFlags} -Wall
 clean :
 	
