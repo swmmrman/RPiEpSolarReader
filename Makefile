@@ -6,6 +6,6 @@ modbusFlags = -lmodbus `pkg-config libmodbus --cflags`
 all : reader
 
 reader: 
-	g++ reader.cxx -o bin/reader ${modbusFlags} -Wall
+	g++ reader.cxx -o bin/reader ${modbusFlags} 
 clean :
 	
