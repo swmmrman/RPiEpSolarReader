@@ -68,8 +68,8 @@ int main(int argc, char *argv[]) {
 	}
     if(DEBUG) cout << "Register: " << hex << startReg+i;
     cout << " Name: " << names[i];
-    cout << " Value: " << dec << ((float)tab_bits[i]/100) << labels[i];
-	cout << endl;
+    cout << " Value: " << dec << ((float)tab_bits[i]/100) << " ";
+	cout << labels[i] << endl;
   }
   length = -1;
   j = 0;
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
   }
   cout << "\n<----Daily Stats---->\n";
   if(DEBUG) cout << "Register 0x330C: ";
-  cout << "Energy Generated: " << dec << (tab_bits[0]/100) << " KWH\n";
+  cout << "Energy Generated: " << dec << ((float)tab_bits[0]/100) << " KWH\n";
   length = -1;
   j = 0;
   while(length == -1) {
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
 	  if(j == 5) break;
 	  j++;
   }
-  cout << "Energy Used: " << dec << (tab_bits[0]/100) << "KWH\n";
+  cout << "Energy Used: " << dec << ((float)tab_bits[0]/100) << " KWH\n";
   modbus_close(ctx);
   modbus_free(ctx);
   return 0;
