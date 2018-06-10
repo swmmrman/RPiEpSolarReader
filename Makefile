@@ -7,10 +7,10 @@ all : epsolarmonitor
 
 epsolarmonitor:
 
-debug-tools:
+tools:
 	mkdir -p bin/tools
-	g++ reader.cxx -o bin/tools/reader ${modbusFlags}
-	g++ ScanModBus.cxx -o bin/tools/scanmodbus ${modbusFlags}
-	g++ RegScan.cxx -o bin/tools/regscan ${modbusFlags}
+	g++ tools/reader.cxx -o bin/tools/reader ${modbusFlags}
+	g++ tools/ScanModBus.cxx -o bin/tools/scanmodbus ${modbusFlags}
+	g++ tools/RegScan.cxx -o bin/tools/regscan ${modbusFlags}
 clean :
-	rm -r bin/tools/ /bin/reader
+	rm -r bin/tools/
