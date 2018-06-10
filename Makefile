@@ -3,12 +3,13 @@ modbusFlags = -lmodbus `pkg-config libmodbus --cflags`
 
 
 
-all : reader
+all : epsolarmonitor
 
-reader:
-	g++ reader.cxx -o bin/reader ${modbusFlags}
+epsolarmonitor:
+
 debug-tools:
 	mkdir -p bin/tools
+	g++ reader.cxx -o bin/tools/reader ${modbusFlags}
 	g++ ScanModBus.cxx -o bin/tools/scanmodbus ${modbusFlags}
 	g++ RegScan.cxx -o bin/tools/regscan ${modbusFlags}
 clean :
