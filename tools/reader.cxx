@@ -4,6 +4,8 @@
 #include <iostream>
 #include <modbus-rtu.h>
 #include <climits>
+#include <ctime>
+#include <iomanip>
 
 int DEBUG = 0;
 
@@ -15,6 +17,9 @@ int main(int argc, char *argv[]) {
   int startReg = 12544;
   int errno;
   int rc;
+  timeval *timeout;
+  timeout->tv_sec = 3;
+  timeout->tv_usec = 0;
   uint16_t tab_bits[registers];
   string names[] = { "Array V", "Array A", "Array W", "", "Bat V",
 					     "Bat Amps", "Bat Watts", "", "", "", "",
@@ -34,6 +39,8 @@ int main(int argc, char *argv[]) {
     registers = stoi(argv[2]);
   }
   ctx = modbus_new_rtu(argv[1], 115200, 'N', 8, 1);
+  modbus_flush(ctx);
+  modbus_set_response_timeout(ctx, timeout);
   if(DEBUG) {
 	  cout << "Device: " << argv[1] << "\n";
   }
@@ -66,7 +73,7 @@ int main(int argc, char *argv[]) {
 		j++;
 		continue;
 	}
-    if(DEBUG) cout << "Register: " << hex << startReg+i;
+    if(DEBUG) cout << "Register: " << dec << startReg+i;
     cout << " Name: " << names[i];
     cout << " Value: " << dec << ((float)tab_bits[i]/100) << " ";
 	cout << labels[i] << endl;
@@ -89,6 +96,47 @@ int main(int argc, char *argv[]) {
 	  j++;
   }
   cout << "Energy Used: " << dec << ((float)tab_bits[0]/100) << " KWH\n";
+  cout << "\n<----Monthly Stats----> \n";
+  j = 0;
+  length = -1;
+  while(length == -1) {
+    length = modbus_read_input_registers(ctx, 0x330E, 1, tab_bits);
+    if(j == 5) break;
+    j++;
+  }
+  if(DEBUG) cout << "Register Ox330E: ";
+  cout << "Energy Generated: " << dec << ((float)tab_bits[0]/100) << "KWH\n";
+  length = -1;
+  j = 0;
+  while(length == -1) {
+    length = modbus_read_input_registers(ctx, 0x3306, 1, tab_bits);
+    if(j == 5) break;
+    j++;
+  }
+  if(DEBUG) cout << "Register 0x3306: ";
+  cout << "Energy Used: " << dec << ((float)tab_bits[0]/100) << "KWH\n";
+  length = -1;
+  //9015 = high byte year   /low byte month
+  //9014 = high byte day    /low byte hour
+  //9013 = high byte minute /low byte second
+  while(length == -1) {
+    length = modbus_read_registers(ctx, 0x9013, 3, tab_bits);
+    if(j == 5) break;
+    j++;
+  }
+  unsigned int year, month, day, hour, minute, second;
+  year = ((tab_bits[2] >> 8) & 0xff) + 2000;
+  month = tab_bits[2] & 0xff;
+  day = (tab_bits[1] >> 8) & 0xff;
+  hour = tab_bits[1] & 0xff;
+  minute = (tab_bits[0] >> 8) & 0xff;
+  second = tab_bits[0] & 0xff;
+  cout << "Time: " << year << "/";
+  cout << setfill('0') << setw(2) << month << "/";
+  cout << setfill('0') << setw(2) << day;
+  cout << " " << setfill('0') << setw(2) << hour << ":";
+  cout << setfill('0') << setw(2) << minute << ":"; 
+  cout << setfill('0') << setw(2) << second << "\n";
   modbus_close(ctx);
   modbus_free(ctx);
   return 0;
