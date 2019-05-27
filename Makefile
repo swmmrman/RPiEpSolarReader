@@ -9,7 +9,7 @@ epsolarmonitor: #argparser.o
 	##g++ solarmonitor.cxx -o bin/solarmonitor ${modbusFlags}
 	g++ livestats.cxx -o bin/livestats
 
-tools:
+tools: loadswitch
 	mkdir -p bin/tools
 	g++ tools/reader.cxx -o bin/tools/reader ${modbusFlags}
 	g++ tools/ScanModBus.cxx -o bin/tools/scanmodbus ${modbusFlags}
@@ -17,6 +17,9 @@ tools:
 
 argparser:
 	g++ argparser.c++ -o argparser.o
+
+loadswitch: 
+	g++ tools/loadswitch.cxx -o bin/tools/loadswitch ${modbusFlags}
 
 clean:
 	rm *.o

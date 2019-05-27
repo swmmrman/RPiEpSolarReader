@@ -21,40 +21,43 @@ int main(int argc, char *argv[]) {
   timeout->tv_sec = 3;
   timeout->tv_usec = 0;
   uint16_t tab_bits[registers];
-  string names[] = { "Array V", "Array A", "Array W", "", "Bat V",
-					     "Bat Amps", "Bat Watts", "", "", "", "",
-						 "", "Load V", "Load Amps", "Load Watts"}; 
+  string names[] = { "Array Voltage", "Array Amprage", "Array Wattage", "", "Bat Volts",
+                         "Bat Amps", "Bat Watts", "", "", "", "",
+                         "", "Load Volts", "Load Amps", "Load Watts"}; 
   string labels[] = { "volts", "amps", "watts", "", "volts", "amps", 
-				      "watts", "", "", "", "", "", "volts", "amps", 
-				      "watts"};
-  string categories[] = {"\n<----Array Values---->\n", 
-	                     "\n<----Battery Values---->\n", 
-						 "\n<----Load Values---->\n"};			 
+                      "watts", "", "", "", "", "", "volts", "amps", 
+                      "watts"};
+  string categories[] = {"\n<----Array Values---->\n",
+                         "\n<----Battery Values---->\n", 
+                         "\n<----Load Values---->\n"};           
   int j=1;
   if(argc < 2) {
     cout << "Usage: " << argv[0] << "<path-to-device>\n";
     return 1;
   }
+  printf("arg count %d\n", argc);
+  int ii = 0;
+  if(DEBUG) for(;ii<=argc; ii++) {printf("Arg %d: %s\n", ii, argv[ii]);}
   if(argc > 2) {
-    registers = stoi(argv[2]);
+    registers = atoi(argv[2]);
   }
   ctx = modbus_new_rtu(argv[1], 115200, 'N', 8, 1);
   modbus_flush(ctx);
   modbus_set_response_timeout(ctx, timeout);
   if(DEBUG) {
-	  cout << "Device: " << argv[1] << "\n";
+      cout << "Device: " << argv[1] << "\n";
   }
   if(modbus_connect(ctx) <= -1) {
-	  cout << "Could not connect\n";
-	  goto exit;
+      cout << "Could not connect\n";
+      goto exit;
   } else {
-	  cout << "Connection succeeded\n";
+      cout << "Connection succeeded\n";
   }
   if(DEBUG) modbus_set_debug(ctx, TRUE);
   rc = modbus_set_slave(ctx, 1);
   if(rc == -1) {
-	  cout << "Unable to set slave id: " << modbus_strerror(errno) << endl;
-	  goto exit;
+      cout << "Unable to set slave id: " << modbus_strerror(errno) << endl;
+      goto exit;
   }
   int length;
   length = modbus_read_input_registers(ctx, startReg, registers,tab_bits);
@@ -68,34 +71,34 @@ int main(int argc, char *argv[]) {
   for(i=0; i<length;i++) {
     //fflush(stdout);
     //printf("Register %d: %d \n", startReg+i, tab_bits[i]);
-	if(names[i] == "") {
-		if(j < 3) cout << categories[j];
-		j++;
-		continue;
-	}
+    if(names[i] == "") {
+        if(j < 3) cout << categories[j];
+        j++;
+        continue;
+    }
     if(DEBUG) cout << "Register: " << dec << startReg+i;
-    cout << " Name: " << names[i];
-    cout << " Value: " << dec << ((float)tab_bits[i]/100) << " ";
-	cout << labels[i] << endl;
+    cout << " Name: \t" << names[i];
+    cout << "\t\t Value: " << dec << ((float)tab_bits[i]/100) << " ";
+    cout << labels[i] << endl;
   }
   length = -1;
   j = 0;
   while(length == -1) {
-	  length = modbus_read_input_registers(ctx, 0x330C, 1, tab_bits);
-	  if(j == 5) break;
-	  j++;
+      length = modbus_read_input_registers(ctx, 0x330C, 1, tab_bits);
+      if(j == 5) break;
+      j++;
   }
   cout << "\n<----Daily Stats---->\n";
   if(DEBUG) cout << "Register 0x330C: ";
-  cout << "Energy Generated: " << dec << ((float)tab_bits[0]/100) << " KWH\n";
+  cout << "Energy Generated: \t" << dec << ((float)tab_bits[0]/100) << " KWH\n";
   length = -1;
   j = 0;
   while(length == -1) {
-	  length = modbus_read_input_registers(ctx, 0x3304, 1, tab_bits);
-	  if(j == 5) break;
-	  j++;
+      length = modbus_read_input_registers(ctx, 0x3304, 1, tab_bits);
+      if(j == 5) break;
+      j++;
   }
-  cout << "Energy Used: " << dec << ((float)tab_bits[0]/100) << " KWH\n";
+  cout << "Energy Used: \t" << dec << ((float)tab_bits[0]/100) << " KWH\n";
   cout << "\n<----Monthly Stats----> \n";
   j = 0;
   length = -1;
@@ -105,7 +108,7 @@ int main(int argc, char *argv[]) {
     j++;
   }
   if(DEBUG) cout << "Register Ox330E: ";
-  cout << "Energy Generated: " << dec << ((float)tab_bits[0]/100) << "KWH\n";
+  cout << "Energy Generated: \t" << dec << ((float)tab_bits[0]/100) << "KWH\n";
   length = -1;
   j = 0;
   while(length == -1) {
@@ -114,7 +117,7 @@ int main(int argc, char *argv[]) {
     j++;
   }
   if(DEBUG) cout << "Register 0x3306: ";
-  cout << "Energy Used: " << dec << ((float)tab_bits[0]/100) << "KWH\n";
+  cout << "Energy Used: \t" << dec << ((float)tab_bits[0]/100) << "KWH\n";
   length = -1;
   //9015 = high byte year   /low byte month
   //9014 = high byte day    /low byte hour
@@ -137,12 +140,21 @@ int main(int argc, char *argv[]) {
   cout << " " << setfill('0') << setw(2) << hour << ":";
   cout << setfill('0') << setw(2) << minute << ":"; 
   cout << setfill('0') << setw(2) << second << "\n";
+  /*length = j = -1;
+  uint8_t *status;
+  status = (uint8_t*) malloc(sizeof(uint8_t));
+  while(length == -1 && j < 4) {
+    length = modbus_read_bits(ctx, 0x2 ,1, status);
+  }
+  printf("Load Status: %s\n", *status==1?"On":"Off");
+  */
+
   modbus_close(ctx);
   modbus_free(ctx);
   return 0;
 
   exit:
   modbus_close(ctx);
-	modbus_free(ctx);
-	return 1;
+    modbus_free(ctx);
+    return 1;
 }
